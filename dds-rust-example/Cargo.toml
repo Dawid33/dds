@@ -1,7 +1,7 @@
 cargo-features = ["per-package-target"]
 
 [package]
-name = "dds-wasm"
+name = "dds-rust-example"
 version = "0.1.0"
 edition = "2021"
 forced-target = "wasm32-unknown-unknown"
@@ -9,7 +9,4 @@ forced-target = "wasm32-unknown-unknown"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dds-wasm-api = { path = "../dds-wasm-api" }
-
-[lib]
-crate-type = ["cdylib"]
+dds-rust-api = { path = "../dds-rust-api" }

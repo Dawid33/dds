@@ -2,11 +2,13 @@
 name = "dds-core"
 version = "0.1.0"
 edition = "2021"
+default-run = "dds-core"
 
 [dependencies]
-wasmer = "2.0.0"
-wasmer-types = "2.0.0"
-anyhow = "1.0.44"
-dds-wasm = { path = "../dds-rust-example" }
 dds-parser = { path = "../dds-parser" }
-#dds-wasm-api = { path = "../dds-wasm-api" }
+dds-rust-api = { path = "../dds-rust-api" }
+
+[dependencies.wasmi]
+version = "*"
+default-features = false
+features = ["core"]

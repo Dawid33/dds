@@ -1,9 +1,13 @@
 [package]
-name = "dds-wasm-api"
+name = "dds-rust-api"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wasmer-types = "2.0.0"
+
+[dependencies.wasmi]
+version = "*"
+default-features = false
+features = ["core"]
