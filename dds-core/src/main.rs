@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use wasmi::{
     Error, Externals, FuncInstance, FuncRef, HostError, ImportsBuilder,
     ModuleImportResolver, ModuleInstance, ModuleRef, RuntimeArgs, RuntimeValue, Signature, Trap,

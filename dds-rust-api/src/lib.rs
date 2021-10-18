@@ -1,8 +1,8 @@
-#![no_std]
+//#![no_std]
 #![feature(lang_items, start)]
 
-mod std;
-pub use std::{panic};
+//mod std;
+//pub use std::{panic};
 
 
 pub fn add_ones() -> i32 {
