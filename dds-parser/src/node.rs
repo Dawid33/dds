@@ -7,33 +7,28 @@ pub enum NodeKind {
     None
 }
 
-pub struct Node<T> {
+pub struct Node {
     pub kind : NodeKind,
-    pub id : i32,
-    pub meta : Option<String>,
     pub inner : String,
-    pub children : Option<Vec<Rc<RefCell<Node<T>>>>>,
-    pub parent : Option<Weak<RefCell<Node<T>>>>,
+    pub children : Option<Vec<Rc<RefCell<Node>>>>,
+    pub parent : Option<Weak<RefCell<Node>>>,
 }
 
-impl<T> Node<T>{
-    pub fn new(id : i32) -> Node<T> {
+impl Node{
+    pub fn new() -> Node {
         Node {
             kind : NodeKind::None,
-            id : id,
-            meta : None,
             inner : String::new(),
             children : None,
             parent : None,
         }
     }
 
-    pub fn add_child(&mut self, node : Node<T>) {
-        let new_child = Rc::new(RefCell::new(node));
+    pub fn add_child(&mut self, node : Rc<RefCell<Node>>) {
         if let Some(ref mut children) = &mut self.children {
-            children.push(new_child);
+            children.push(node);
         } else {
-            self.children = Some(vec![new_child]);
+            self.children = Some(vec![node]);
         }
     }
 

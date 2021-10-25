@@ -2,7 +2,8 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum ParseError {
-    NodeNotExist
+    NodeNotExist,
+    UndefinedState
 }
 
 impl std::error::Error for ParseError {}
