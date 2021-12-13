@@ -10,23 +10,22 @@ pub struct MyType {
     pub name : String,
 }
 
-const WASM_PATH : &'static str = "target/wasm32-unknown-unknown/debug/dds-rust-example.wasm";
+const WASM_PATH : &'static str = "../wasm/target/wasm32-unknown-unknown/debug/dds-example.wasm";
 
-pub fn add_ones_wasm() -> i32 {
-    println!("Hello");
-    4
+pub fn hello_world() {
+    println!("Hello World!");
 }
 
 struct RuntimeModuleImportResolver;
 
-const ADD_ONE_WASM_INDEX: usize = 0 ;
+const HELLO_WORLD_WASM_INDEX: usize = 0 ;
 
 impl<'a> ModuleImportResolver for RuntimeModuleImportResolver {
     fn resolve_func(&self, field_name: &str, _signature: &wasmi::Signature) -> Result<wasmi::FuncRef, wasmi::Error> {
         let func_ref = match field_name {
-            "add_ones_wasm" => FuncInstance::alloc_host(
-        Signature::new(&[][..], Some(ValueType::I32) ),
-                ADD_ONE_WASM_INDEX,
+            "hello_world_wasm" => FuncInstance::alloc_host(
+        Signature::new(&[][..], None),
+                HELLO_WORLD_WASM_INDEX,
             ),
             _ => {
                 return Err(Error::Function(format!(
@@ -44,8 +43,9 @@ struct Runtime;
 impl Externals for Runtime {
     fn invoke_index(&mut self, index: usize, args: RuntimeArgs) -> Result<Option<RuntimeValue>, Trap> {
         match index {
-            ADD_ONE_WASM_INDEX => {
-                Ok(Some(add_ones_wasm().into()))
+            HELLO_WORLD_WASM_INDEX => {
+                hello_world();
+                Ok(None)
             },
             _ => panic!("unknown function index")
         }

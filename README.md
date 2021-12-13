@@ -8,4 +8,4 @@ Cast rust type to and from wasm types.
 
 ## HTML Grammer
 
-StartTag ::=
+StartElement ::=

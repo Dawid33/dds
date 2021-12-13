@@ -1,0 +1,6 @@
+cargo-features = ["per-package-target"]
+
+[workspace]
+members = ["dds-core", "html-parser"]
+exclude = ["dds-example"]
+default-members = ["dds-core", "html-parser"]

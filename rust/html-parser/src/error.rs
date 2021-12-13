@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum ParseError {
-    NodeNotExist,
+    ElementNotExist,
     UndefinedState
 }
 

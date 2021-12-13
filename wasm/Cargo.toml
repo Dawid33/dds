@@ -1,0 +1,3 @@
+[workspace]
+members = ["dds-example", "dds-app"]
+default-members = ["dds-example", "dds-app"]

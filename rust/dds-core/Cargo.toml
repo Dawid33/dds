@@ -5,8 +5,7 @@ edition = "2021"
 default-run = "dds-core"
 
 [dependencies]
-dds-parser = { path = "../dds-parser" }
-dds-rust-api = { path = "../dds-rust-api" }
+html-parser = { path = "../html-parser" }
 
 [dependencies.wasmi]
 version = "*"

@@ -1,5 +1,0 @@
-cargo-features = ["per-package-target"]
-
-[workspace]
-members = ["dds-rust-example", "dds-core", "dds-parser", "dds-rust-api"]
-default-members = ["dds-core", "dds-parser"]
