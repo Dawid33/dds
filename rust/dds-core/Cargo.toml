@@ -11,3 +11,5 @@ html-parser = { path = "../html-parser" }
 version = "*"
 default-features = false
 features = ["core"]
+
+[lib]

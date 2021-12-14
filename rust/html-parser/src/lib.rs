@@ -1,7 +1,7 @@
 use std::{result::Result, iter::Iterator};
 
 mod tests;
-mod document;
+pub mod document;
 mod tree;
 mod tokenizer;
 mod parser;

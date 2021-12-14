@@ -1,9 +1,9 @@
 #![no_std]
 #![no_main]
-pub use ddsapp::*;
+pub use ddsapi::*;
 
 #[no_mangle]
 pub fn main() {
-    ddsapp::hello_world();
+    ddsapi::hello_world();
 
 }

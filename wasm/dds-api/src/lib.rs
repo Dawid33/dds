@@ -2,12 +2,7 @@
 #![no_main]
 #![feature(lang_items, start)]
 
-use core::panic::PanicInfo;
-
-#[panic_handler]
-pub fn panic(_panic: &PanicInfo<'_>) -> ! {
-    loop {}
-}
+mod std;
 
 extern "Rust" {
     pub fn main();
