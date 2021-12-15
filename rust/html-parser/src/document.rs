@@ -1,15 +1,15 @@
 use std::result::Result;
 
-use crate::{ValidatedRawDocument, tree::{Tree, DummyTree}, tokenizer::Tokenizer};
+use crate::{RawDocument, tree::{Tree, DummyTree}, tokenizer::Tokenizer};
 
 pub struct Document<T> where T : Tree {
     pub tree : T,
 }
 
-impl TryFrom<ValidatedRawDocument> for Document<DummyTree> {
+impl TryFrom<RawDocument> for Document<DummyTree> {
     type Error = Box<dyn std::error::Error>;
 
-    fn try_from(value: ValidatedRawDocument) -> Result<Self, Self::Error> {
+    fn try_from(value: RawDocument) -> Result<Self, Self::Error> {
         let mut dummy_tree = crate::tree::DummyTree::new();
 
         let tokens = Tokenizer::new(value);
@@ -26,7 +26,7 @@ impl TryFrom<ValidatedRawDocument> for Document<DummyTree> {
 
 impl Document<DummyTree> {
     pub fn new(doc : &str) -> Result<Self, Box<dyn std::error::Error>> {
-        let raw = ValidatedRawDocument::new(doc)?;
+        let raw = RawDocument::new(doc)?;
         let output = Document::try_from(raw)?;
         Ok(output)
     }

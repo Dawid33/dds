@@ -8,7 +8,7 @@ pub struct DummyTree {
 }
 
 impl Tree for DummyTree {
-    fn append(&mut self, token : Token) {
+    fn append(&mut self, _token : Token) {
         //TODO
     }
 }

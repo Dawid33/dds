@@ -1,0 +1,7 @@
+[package]
+name = "ddsbindings"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dds-lib = { path="../../rust/dds-lib"}

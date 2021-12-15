@@ -1,9 +1,6 @@
 #![no_std]
-#![no_main]
-pub use ddsapi::*;
+extern crate ddsbindings;
 
-#[no_mangle]
 pub fn main() {
-    ddsapi::hello_world();
-
+    ddsbindings::hello_world();
 }

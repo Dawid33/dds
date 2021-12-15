@@ -1,4 +1,8 @@
 #![allow(unused)]
+use serde::{Serialize, Deserialize};
+
+mod exports;
+use exports::*;
 
 use wasmi::{
     Error, Externals, FuncInstance, FuncRef, HostError, ImportsBuilder,
@@ -11,10 +15,6 @@ pub struct MyType {
 }
 
 const WASM_PATH : &'static str = "../wasm/target/wasm32-unknown-unknown/debug/dds-example.wasm";
-
-pub fn hello_world() {
-    println!("Hello World!");
-}
 
 struct RuntimeModuleImportResolver;
 
@@ -60,8 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     imports.push_resolver("env", &RuntimeModuleImportResolver);
     let mut runtime = Runtime;
     let instance = ModuleInstance::new(&module, &imports).unwrap().assert_no_start();
-    
-    let result_opt = instance.invoke_export::<Runtime>("dds_start", &[], &mut runtime).unwrap();
+    let result_opt = instance.invoke_export::<Runtime>("main", &[RuntimeValue::I32(1),RuntimeValue::I32(1)], &mut runtime).unwrap();
     
     Ok(())
 }

@@ -1,11 +1,9 @@
-use std::thread::JoinHandle;
-use crate::parser::ParseState;
 use crate::states::*;
 
-use crate::ValidatedRawDocument;
+use crate::RawDocument;
 
 pub struct Tokenizer{
-    document : ValidatedRawDocument,
+    document : RawDocument,
     state : TokenizationState,
     position : usize,
     previous : Option<char>,
@@ -47,7 +45,7 @@ pub enum Token {
 #[derive(Debug, PartialEq)]
 pub struct TagData {
     name : String,
-    selfClosingFlag : bool,
+    self_closing_flag : bool,
     attributes : Vec<Attribute>
 }
 
@@ -55,7 +53,7 @@ impl TagData {
     pub fn new() -> Self {
         Self {
             name : String::new(),
-            selfClosingFlag : false,
+            self_closing_flag : false,
             attributes : Vec::new(),
         }
     }
@@ -64,7 +62,7 @@ impl TagData {
         self
     }
     pub fn self_closing_flag(mut self, flag : bool) -> Self {
-        self.selfClosingFlag = flag;
+        self.self_closing_flag = flag;
         self
     }
     pub fn attributes(mut self, attributes : Vec<Attribute>) -> Self {
@@ -79,7 +77,7 @@ pub enum TagKind {
 }
 
 impl Tokenizer {
-    pub fn new (document : ValidatedRawDocument) -> Self {
+    pub fn new (document : RawDocument) -> Self {
         Self {
             document,
             position : 0,
@@ -97,7 +95,6 @@ impl Iterator for Tokenizer {
         let mut tag = TagData::new();
         let mut tag_kind = TagKind::Start;
         let mut reconsumed = false;
-
 
         loop {
             // If the current character is reconsumed, reset the itertor.
@@ -183,7 +180,7 @@ impl Iterator for Tokenizer {
                     match current {
                         '\u{003E}' => {
                             self.state = TokenizationState::Data;
-                            tag.selfClosingFlag = true;
+                            tag.self_closing_flag = true;
                             return Some(Token::StartTag(tag));
                         }, // >
                         _ => {

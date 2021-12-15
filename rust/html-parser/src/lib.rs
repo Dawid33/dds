@@ -1,4 +1,4 @@
-use std::{result::Result, iter::Iterator};
+use std::{result::Result};
 
 mod tests;
 pub mod document;
@@ -7,9 +7,9 @@ mod tokenizer;
 mod parser;
 mod states;
 
-pub struct ValidatedRawDocument {
+pub struct RawDocument {
     raw : String,
-    encoding : EncodingConfidence,
+    _encoding : EncodingConfidence,
 }
 
 pub enum EncodingConfidence {
@@ -20,30 +20,30 @@ pub enum EncodingConfidence {
 
 //TODO : Add more encodings from the spec
 pub enum Encoding {
-    UTF_8,
+    Utf8,
 }
 
-impl ValidatedRawDocument {
+impl RawDocument {
     pub fn new(document : &str) -> Result<Self, Box<dyn std::error::Error>> {
-        ValidatedRawDocument::preprocess(document)
+        RawDocument::preprocess(document)
     }
     pub fn append_and_revalidate(&mut self, value : &str) -> Result<(), Box<dyn std::error::Error>> {
         self.raw.push_str(value);
-        if let Err(e) = ValidatedRawDocument::preprocess(&self.raw) {
+        if let Err(e) = RawDocument::preprocess(&self.raw) {
             self.raw.truncate(value.len());
             Err(e)
         } else {
             Ok(())
         }
     }
-    fn preprocess(doc : &str) -> Result<ValidatedRawDocument, Box<dyn std::error::Error>> {
+    fn preprocess(doc : &str) -> Result<RawDocument, Box<dyn std::error::Error>> {
         // TODO : Do pre-scan of document.
         // https://dev.w3.org/html5/spec-LC/parsing.html
         // - [ ] Determine the encoding of the document.
         // - [ ] Change all foreign encoded characters to utf-8
         let doc = Self {
             raw : String::from(doc),
-            encoding : EncodingConfidence::Irrelevant,
+            _encoding : EncodingConfidence::Irrelevant,
         };
         Ok(doc)
     }
