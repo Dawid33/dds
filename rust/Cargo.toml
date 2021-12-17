@@ -1,5 +1,5 @@
 cargo-features = ["per-package-target"]
 
 [workspace]
-members = ["dds-lib", "html-parser", "dds"]
-default-members = ["dds-lib", "html-parser", "dds"]
+members = ["dds-api", "html-parser", "dds", "wasm-vm", "html-prettify"]
+default-members = ["dds-api", "html-parser", "dds", "wasm-vm", "html-prettify"]

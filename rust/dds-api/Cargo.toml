@@ -1,9 +1,8 @@
 [package]
-name = "dds-lib"
+name = "dds-api"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-html-parser = { path = "../html-parser" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 #bincode = "1.3.3"
