@@ -1,5 +1,0 @@
-cargo-features = ["per-package-target"]
-
-[workspace]
-members = ["dds-api", "html-parser", "dds", "wasm-vm", "html-prettify"]
-default-members = ["dds-api", "html-parser", "dds", "wasm-vm", "html-prettify"]

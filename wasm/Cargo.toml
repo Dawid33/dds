@@ -1,3 +1,0 @@
-[workspace]
-members = ["dds-example", "dds-bindings"]
-default-members = ["dds-example", "dds-bindings"]
