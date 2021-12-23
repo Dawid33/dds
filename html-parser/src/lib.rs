@@ -1,3 +1,4 @@
+#![allow(unused)]
 use preproccesor::PreProccessor;
 use std::result::Result;
 use states::InsertionMode;
