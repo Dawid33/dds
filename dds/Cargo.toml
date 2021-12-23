@@ -13,8 +13,3 @@ indextree = { path = "../indextree" }
 wasmtime = { path = "../../wasmtime/crates/wasmtime" }
 # serde = { version = "1.0", default-features = false, features = ["derive"] }
 # bincode = "1.3.3"
-
-# [dependencies.wasmi]
-# version = "0.9.1"
-# default-features = false
-# features = ["core"]
