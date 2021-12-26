@@ -11,7 +11,7 @@ fn main () -> Result<(), Box<dyn std::error::Error>> {
         ]
     ).unwrap();
 
-    let wrapped_document = HtmlParser::parse("<html><body></body></html>", ParseState::new());
+    let wrapped_document = HtmlParser::parse("<html></html>", ParseState::new());
     let document = match wrapped_document {
         Err(e) => {
             error!("{:?}", e.to_string());

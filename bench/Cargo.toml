@@ -6,3 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+html-parser = { path = "../html-parser" }
+dds-api = { path = "../dds-api" }
+indextree = { path = "../deps/indextree" }
+simplelog = { path = "../deps/simplelog"}
+log = { path = "../deps/log"}

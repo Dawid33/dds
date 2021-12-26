@@ -9,6 +9,6 @@ default-run = "dds"
 [dependencies]
 html-parser = { path = "../html-parser" }
 dds-api = { path = "../dds-api" }
-indextree = { path = "../indextree" }
-simplelog = { path = "../simplelog"}
-log = { path = "../log"}
+indextree = { path = "../deps/indextree" }
+simplelog = { path = "../deps/simplelog"}
+log = { path = "../deps/log"}

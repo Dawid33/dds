@@ -5,7 +5,7 @@ use states::InsertionMode;
 use indextree::Arena;
 use log::*;
 
-mod preproccesor;
+pub mod preproccesor;
 mod states;
 mod tests;
 mod tokenizer;
@@ -23,6 +23,9 @@ pub trait Tree<T> {
 #[derive(Debug)]
 pub enum ElementKind {
     Html,
+    Head,
+    Body,
+    Br,
 }
 
 #[derive(Debug)]
@@ -38,6 +41,7 @@ pub struct ParseState {
     open_elements: Vec<indextree::NodeId>,
     reconsume : bool,
     previous : Option<Token>,
+    head_pointer : Option<indextree::NodeId>,
 }
 
 impl ParseState {
@@ -49,7 +53,8 @@ impl ParseState {
             open_elements: Vec::new(),
             tree : Arena::new(),
             reconsume : false,
-            previous : None
+            previous : None,
+            head_pointer : None,
         }
     }
 }
@@ -62,7 +67,7 @@ impl HtmlParser {
     }
 
      // Parse a token stream into a DOM Tree.
-    // https://html.spec.whatwg.org/multipage/parsing.html
+    // https://html.spec.whatwg.org/multipage/parsing.html#tree-construction
     pub fn parse(input: &str, mut state: ParseState) -> Result<Arena<Element>, Box<dyn std::error::Error>>
     //where T : Tree<Element> + Default
     {
@@ -82,16 +87,23 @@ impl HtmlParser {
                 if let Some(e) = error {
                     warn!("{}", e);
                 }
+                info!("Token : {:?}", token);
                 state.previous = Some(token.clone());
                 token
             } else {
+                // Exit the loop if tokens.next() return None, which means we have read all tokens.
                 break;
             };
 
-            match state.mode {
+            let result = match state.mode {
                 InsertionMode::Initial => parser::parse_initial(current_token, &mut state),
                 InsertionMode::BeforeHtml => parser::parse_before_html(current_token, &mut state),
+                InsertionMode::BeforeHead => parser::parse_before_head(current_token, &mut state),
                 _ => return Err(Box::new(HtmlParseError::InsertionModeCaseNotHandled(state.mode))),
+            };
+            
+            if let Err(e) = result {
+
             }
         }
         Ok(state.tree)

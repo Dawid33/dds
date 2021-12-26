@@ -6,6 +6,8 @@ use crate::{Tokenizer, Token, states::InsertionMode};
 pub enum HtmlParseError {
     InsertionModeCaseNotHandled(InsertionMode),
     ReconsumeNonExistingToken,
+    UnexpectedToken(Token),
+    GenericParseError,
 }
 
 
@@ -25,6 +27,8 @@ impl std::fmt::Display for HtmlParseError {
         match &self {
             HtmlParseError::InsertionModeCaseNotHandled(mode) => write!(f, "InsertionModeCaseNotHandled. Missing implementation of {:?}", mode),
             HtmlParseError::ReconsumeNonExistingToken => write!(f, "ReconsumeNonExistingToken. Fatal implementation error."),
+            HtmlParseError::UnexpectedToken(t) => write!(f, "UnexpectedToken {:?}", t),
+            HtmlParseError::GenericParseError => write!(f, "GenericParseError. Explicit cause is not documented."),
         }
     }
 }

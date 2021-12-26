@@ -1598,7 +1598,7 @@ pub fn __private_api_enabled(level: Level, target: &str) -> bool {
 /// should compare the level against this value.
 ///
 /// [`logger`]: fn.logger.html
-// pub const STATIC_MAX_LEVEL: LevelFilter = MAX_LEVEL_INNER;
+pub const STATIC_MAX_LEVEL: LevelFilter = LevelFilter::Off;
 
 // cfg_if! {
 //     if #[cfg(all(not(debug_assertions), feature = "release_max_level_off"))] {

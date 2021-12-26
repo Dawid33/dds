@@ -29,7 +29,7 @@ impl CombinedLogger {
     /// Fails if another logger is already set globally.
     ///
     /// # Examples
-    /// ```
+    /// ```rust,ignore
     /// # extern crate simplelog;
     /// # use simplelog::*;
     /// # use std::fs::File;
@@ -60,7 +60,7 @@ impl CombinedLogger {
     /// All loggers need to implement log::Log.
     ///
     /// # Examples
-    /// ```
+    /// ```rust,ignore
     /// # extern crate simplelog;
     /// # use simplelog::*;
     /// # use std::fs::File;

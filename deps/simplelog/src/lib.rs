@@ -56,7 +56,7 @@ pub trait SharedLogger: Log {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```rust,ignore
     /// # extern crate simplelog;
     /// # use simplelog::*;
     /// # fn main() {
@@ -72,7 +72,7 @@ pub trait SharedLogger: Log {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```rust,ignore
     /// # extern crate simplelog;
     /// # use simplelog::*;
     /// # fn main() {
