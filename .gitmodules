@@ -3,10 +3,10 @@
 	url = ../indextree
 [submodule "log"]
 	path = log
-	url = https://github.com/rust-lang/log
+	url = ../log
 [submodule "simplelog"]
 	path = simplelog
-	url = https://github.com/drakulix/simplelog.rs
+	url = ../simplelog
 [submodule "termcolor"]
 	path = termcolor
-	url = https://github.com/BurntSushi/termcolor
+	url = ../termcolor
