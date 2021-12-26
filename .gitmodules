@@ -1,3 +1,15 @@
 [submodule "dds-api"]
 	path = dds-api
 	url = ../dds-api
+[submodule "deps/log"]
+	path = deps/log
+	url = ../log
+[submodule "deps/simplelog"]
+	path = deps/simplelog
+	url = ../simplelog.rs
+[submodule "deps/termcolor"]
+	path = deps/termcolor
+	url = ../termcolor
+[submodule "deps/indextree"]
+	path = deps/indextree
+	url = ../indextree
