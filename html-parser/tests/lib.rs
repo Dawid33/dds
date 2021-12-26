@@ -1,25 +1,17 @@
-extern crate simplelog;
-
-use simplelog::*;
 use html_parser::{HtmlParser, ParseState};
-use log::*;
 
-fn main () -> Result<(), Box<dyn std::error::Error>> {
-    CombinedLogger::init(
-        vec![
-            TermLogger::new(LevelFilter::Trace, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
-        ]
-    ).unwrap();
-
+#[test]
+#[ignore]
+pub fn html_parser_test1() -> Result<(), Box<dyn std::error::Error>>{
     let wrapped_document = HtmlParser::parse("<html><body></body></html>", ParseState::new());
     let document = match wrapped_document {
         Err(e) => {
-            error!("{:?}", e.to_string());
+            println!("{}", e);
             return Err(e);
         },
         Ok(document) => document,
     };
-
+    
     for element in document.iter() {
         let data = element.get();
         println!("{:?}", data);

@@ -3,13 +3,16 @@ use preproccesor::PreProccessor;
 use std::result::Result;
 use states::InsertionMode;
 use indextree::Arena;
+use log::*;
 
 mod preproccesor;
 mod states;
 mod tests;
 mod tokenizer;
 mod parser;
+mod error;
 
+use error::HtmlParseError;
 pub use tokenizer::Token;
 pub use tokenizer::Tokenizer;
 
@@ -51,34 +54,49 @@ impl ParseState {
     }
 }
 
-// Parse a token stream into a DOM Tree.
-// https://html.spec.whatwg.org/multipage/parsing.html
-pub fn parse(input: &str, mut state: ParseState) -> Result<Arena<Element>, Box<dyn std::error::Error>>
-//where T : Tree<Element> + Default
-{
-    let html = PreProccessor::new(input)?;
-    let mut tokens = Tokenizer::new(html);
-    
-    // Exit the loop after all tokens have been parsed.
-    loop {
-        let current_token = if state.reconsume {
-            if let Some(ref token) = state.previous {
-                state.reconsume = false;
-                token.clone()
-            } else {
-                panic!("Tried to reconsume previous token, without a previous token existing.");
-            }
-        } else if let Some(token) = tokens.next() {
-            state.previous = Some(token.clone());
-            token
-        } else {
-            break;
-        };
+pub struct HtmlParser {}
 
-        match state.mode {
-            InsertionMode::Initial => parser::parse_initial(current_token, &mut state),
-            _ => println!("ERROR: Insertion mode case not handled"),
+impl HtmlParser {
+    pub fn new() -> Self {
+        Self {
+
         }
     }
-    Ok(state.tree)
+
+     // Parse a token stream into a DOM Tree.
+    // https://html.spec.whatwg.org/multipage/parsing.html
+    pub fn parse(input: &str, mut state: ParseState) -> Result<Arena<Element>, Box<dyn std::error::Error>>
+    //where T : Tree<Element> + Default
+    {
+        let html = PreProccessor::new(input)?;
+        let mut tokens = Tokenizer::new(html);
+        
+        // Exit the loop after all tokens have been parsed.
+        loop {
+            let current_token = if state.reconsume {
+                if let Some(ref token) = state.previous {
+                    state.reconsume = false;
+                    token.clone()
+                } else {
+                    return Err(Box::new(HtmlParseError::ReconsumeNonExistingToken));
+                }
+            } else if let Some((token, error)) = tokens.next() {
+                if let Some(e) = error {
+                    warn!("{}", e);
+                }
+                state.previous = Some(token.clone());
+                token
+            } else {
+                break;
+            };
+
+            match state.mode {
+                InsertionMode::Initial => parser::parse_initial(current_token, &mut state),
+                InsertionMode::BeforeHtml => parser::parse_before_html(current_token, &mut state),
+                _ => return Err(Box::new(HtmlParseError::InsertionModeCaseNotHandled(state.mode))),
+            }
+        }
+        Ok(state.tree)
+    }
 }
+

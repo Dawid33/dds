@@ -10,6 +10,5 @@ default-run = "dds"
 html-parser = { path = "../html-parser" }
 dds-api = { path = "../../dds-api" }
 indextree = { path = "../indextree" }
-wasmtime = { path = "../../wasmtime/crates/wasmtime" }
-# serde = { version = "1.0", default-features = false, features = ["derive"] }
-# bincode = "1.3.3"
+simplelog = { path = "../simplelog"}
+log = { path = "../log"}

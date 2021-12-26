@@ -1,0 +1,99 @@
+digraph graph_name {
+	graph [
+		charset = "UTF-8";
+		label = "State Transition Diagram (Tokenizer State Variable)",
+		labelloc = "t",
+		labeljust = "c",
+		bgcolor = "#343434",
+		fontcolor = white,
+		fontsize = 18,
+		style = "filled",
+		rankdir = TB,
+		margin = 0.2,
+		splines = spline,
+		ranksep = 1.0,
+		nodesep = 0.25
+		splines=ortho
+	];
+
+	node [
+		colorscheme = "rdylgn11"
+		style = "solid,filled",
+		fontsize = 16,
+		fontcolor = 6,
+		fontname = "Migu 1M",
+		color = 7,
+		fillcolor = 11,
+		//fixedsize = true,
+		height = 0.6,
+		width = 1.2
+	];
+
+	edge [
+		style = solid,
+		fontsize = 14,
+		fontcolor = white,
+		fontname = "Migu 1M",
+		color = white,
+		labelfloat = true,
+		labeldistance = 2.5,
+		labelangle = 70
+	];
+
+	// node define
+	Data;
+	//CharacterReferenceInData [shape = box];
+	TagOpen [shape = box];
+	MarkupDeclarationSyntax [shape = box];
+	EndTagOpen [shape = box];
+	TagName [shape = box];
+	SelfClosingStartTag [shape = box];
+	BogusComment [shape = box];
+	BeforeAttributeName [shape = box];
+	AttributeName [shape = box];
+	AfterAttributeName [shape = box];
+	BeforeAttributeValue [shape = box];
+	AttributeValueUnquoted [shape = box];
+	// gamma [shape = Msquare];
+	// delta [shape = box];
+	// epsilon [shape = trapezium];
+	// zeta [shape = Msquare];
+	// eta;
+	// theta [shape = doublecircle];
+
+  	// edge define
+	Data -> TagOpen;
+	//Data -> CharacterReferenceInData;
+
+	TagOpen -> MarkupDeclarationSyntax;
+	TagOpen -> EndTagOpen;
+	TagOpen -> TagName;
+	TagOpen -> BogusComment;
+
+	EndTagOpen -> TagName;
+	//EndTagOpen -> Data;
+	//EndTagOpen -> BogusComment;
+
+	TagName -> BeforeAttributeName;
+	TagName -> SelfClosingStartTag;
+	//TagName -> Data;
+
+	//SelfClosingStartTag -> Data;
+	SelfClosingStartTag -> BeforeAttributeName;
+	
+	BeforeAttributeName -> SelfClosingStartTag;
+	//BeforeAttributeName -> Data;
+	BeforeAttributeName -> AttributeName;
+	
+	AttributeName -> SelfClosingStartTag;
+	AttributeName -> BeforeAttributeValue;
+	AttributeName -> AfterAttributeValue;
+
+	AfterAttributeName -> SelfClosingStartTag;
+	AfterAttributeName -> BeforeAttributeValue;
+	AfterAttributeName -> AttributeName;
+
+	BeforeAttributeValue -> AttributeValueUnquoted
+	
+	AttributeValueUnquoted -> BeforeAttributeName;
+}

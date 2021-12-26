@@ -1,5 +1,10 @@
 cargo-features = ["per-package-target"]
 
 [workspace]
-members = ["html-parser", "dds", "indextree"]
-default-members = ["html-parser", "dds", "indextree"]
+members = ["simplelog", "log", "termcolor", "css-parser", "html-parser", "dds", "indextree"]
+default-members = ["simplelog", "log", "termcolor", "css-parser", "html-parser", "dds", "indextree"]
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
