@@ -30,14 +30,17 @@ impl std::fmt::Display for HtmlParseError {
 }
 
 #[derive(Debug)]
-pub enum TokenizerError {
+pub enum HtmlTokenizerError {
     Something,
 }
 
-impl std::error::Error for TokenizerError {}
+impl std::error::Error for HtmlTokenizerError {}
 
-impl std::fmt::Display for TokenizerError {
+impl std::fmt::Display for HtmlTokenizerError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "TokenizerError: ")
+        write!(f, "HtmlTokenizerError: ");
+        match &self {
+            HtmlTokenizerError::Something => write!(f, "Something went wrong."),
+        }
     }
 }

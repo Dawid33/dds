@@ -58,9 +58,7 @@ pub struct HtmlParser {}
 
 impl HtmlParser {
     pub fn new() -> Self {
-        Self {
-
-        }
+        Self {}
     }
 
      // Parse a token stream into a DOM Tree.

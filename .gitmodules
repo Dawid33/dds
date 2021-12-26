@@ -1,12 +1,15 @@
 [submodule "indextree"]
-	path = indextree
+	path = deps/indextree
 	url = ../indextree
 [submodule "log"]
-	path = log
+	path = deps/log
 	url = ../log
 [submodule "simplelog"]
-	path = simplelog
+	path = deps/simplelog
 	url = ../simplelog
 [submodule "termcolor"]
-	path = termcolor
+	path = deps/termcolor
 	url = ../termcolor
+[submodule "dds-api"]
+	path = dds-api
+	url = ../dds-api

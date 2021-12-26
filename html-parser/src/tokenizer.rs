@@ -1,4 +1,4 @@
-use crate::error::TokenizerError;
+use crate::error::HtmlTokenizerError;
 use crate::states::*;
 
 use crate::PreProccessor;
@@ -80,7 +80,7 @@ impl Tokenizer {
 }
 
 impl Iterator for Tokenizer {
-    type Item = (Token, Option<TokenizerError>);
+    type Item = (Token, Option<HtmlTokenizerError>);
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut chars = self.document.raw[self.position..].chars();
@@ -109,8 +109,8 @@ impl Iterator for Tokenizer {
                     match current {
                         '\u{0026}' => self.state = TokenizationState::CharacterReferenceInData, // &
                         '\u{003C}' => self.state = TokenizationState::TagOpen,                  // <
-                        '\u{0000}' => return Some((Token::Character(current), Some(TokenizerError::Something))), // NULL, Parse error
-                        _ => return Some((Token::Character(current), Some(TokenizerError::Something))),
+                        '\u{0000}' => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))), // NULL, Parse error
+                        _ => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))),
                         // TODO : EOF
                     }
                 }
@@ -129,7 +129,7 @@ impl Iterator for Tokenizer {
                             self.tag_name_buf.push(current);
                         } // a - z
                         '\u{003F}' => self.state = TokenizationState::BogusComment, // ?, Parse error.
-                        _ => return Some((Token::Character('\u{003C}'), Some(TokenizerError::Something))), // Parse error. TODO: Doesn't make sense.
+                        _ => return Some((Token::Character('\u{003C}'), Some(HtmlTokenizerError::Something))), // Parse error. TODO: Doesn't make sense.
                     }
                 }
                 TokenizationState::EndTagOpen => {
@@ -339,13 +339,13 @@ impl Iterator for Tokenizer {
                 self.tag_name_buf.clone(),
                 self.is_self_closing,
                 Vec::from(&mut self.attributes_buf[..]),
-            ),None))
+            ), None))
         } else {
             Some((Token::EndTag(
                 self.tag_name_buf.clone(),
                 self.is_self_closing,
                 Vec::from(&mut self.attributes_buf[..]),
-            ),None))
+            ), None))
         };
         self.reset();
         return output;
