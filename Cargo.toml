@@ -1,8 +1,8 @@
 cargo-features = ["per-package-target"]
 
 [workspace]
-members = ["bench", "deps/simplelog", "deps/log", "deps/termcolor", "css-parser", "html-parser", "dds", "dds-api", "deps/indextree"]
-default-members = ["bench", "deps/simplelog", "deps/log", "deps/termcolor", "css-parser", "html-parser", "dds", "dds-api","deps/indextree"]
+members = ["deps/pico-args", "bench", "deps/simplelog", "deps/log", "deps/termcolor", "css-parser", "html-parser", "dds", "dds-api", "deps/indextree"]
+default-members = ["bench", "css-parser", "html-parser", "dds", "dds-api"]
 
 [profile.dev]
 opt-level = 0

@@ -1,6 +1,102 @@
 use std::{default, string::ParseError};
+use indextree::Arena;
+use log::*;
+use crate::{Token, states::InsertionMode, error::HtmlParseError, preproccesor::PreProccessor, Tokenizer};
 
-use crate::{Token, ParseState, states::InsertionMode, Element, ElementKind, error::HtmlParseError};
+
+pub trait Tree<T> {
+    fn get_node_id(&mut self, node: &T);
+}
+
+#[derive(Debug)]
+pub enum ElementKind {
+    Html,
+    Head,
+    Body,
+    Br,
+}
+
+#[derive(Debug)]
+pub struct Element {
+    kind : ElementKind,
+}
+
+pub struct ParseState {
+    _script_nesting_level: u32,
+    _parser_pause: bool,
+    tree: Arena<Element>,
+    mode: InsertionMode,
+    open_elements: Vec<indextree::NodeId>,
+    reconsume : bool,
+    previous : Option<Token>,
+    head_pointer : Option<indextree::NodeId>,
+}
+
+impl ParseState {
+    pub fn new() -> Self {
+        Self {
+            _script_nesting_level: 0,
+            _parser_pause: false,
+            mode: InsertionMode::Initial,
+            open_elements: Vec::new(),
+            tree : Arena::new(),
+            reconsume : false,
+            previous : None,
+            head_pointer : None,
+        }
+    }
+}
+
+pub struct HtmlParser {}
+
+impl HtmlParser {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+     // Parse a token stream into a DOM Tree.
+    // https://html.spec.whatwg.org/multipage/parsing.html#tree-construction
+    pub fn parse(input: &str, mut state: ParseState) -> Result<Arena<Element>, Box<dyn std::error::Error>>
+    //where T : Tree<Element> + Default
+    {
+        let html = PreProccessor::new(input)?;
+        let mut tokens = Tokenizer::new(html);
+        
+        // Exit the loop after all tokens have been parsed.
+        loop {
+            let current_token = if state.reconsume {
+                if let Some(ref token) = state.previous {
+                    state.reconsume = false;
+                    token.clone()
+                } else {
+                    return Err(Box::new(HtmlParseError::ReconsumeNonExistingToken));
+                }
+            } else if let Some((token, error)) = tokens.next() {
+                if let Some(e) = error {
+                    warn!("{}", e);
+                }
+                info!("Token : {:?}", token);
+                state.previous = Some(token.clone());
+                token
+            } else {
+                // Exit the loop if tokens.next() return None, which means we have read all tokens.
+                break;
+            };
+
+            let result = match state.mode {
+                InsertionMode::Initial => parse_initial(current_token, &mut state),
+                InsertionMode::BeforeHtml => parse_before_html(current_token, &mut state),
+                InsertionMode::BeforeHead => parse_before_head(current_token, &mut state),
+                _ => return Err(Box::new(HtmlParseError::InsertionModeCaseNotHandled(state.mode))),
+            };
+            
+            if let Err(e) = result {
+
+            }
+        }
+        Ok(state.tree)
+    }
+}
 
 //https://html.spec.whatwg.org/multipage/parsing.html#the-initial-insertion-mode
 pub fn parse_initial(token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {

@@ -6,5 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-indextree = {path = "../deps/indextree"}
-log = { path = "../deps/log"}
+indextree = {path = "../deps/indextree" }
+log = { path = "../deps/log" }
+pico-args = { path = "../deps/pico-args" }
+simplelog = { path = "../deps/simplelog" }
+yaml-rust = { path = "../deps/yaml-rust" }
