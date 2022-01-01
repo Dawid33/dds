@@ -1,13 +1,14 @@
-cargo-features = ["per-package-target"]
-
 [workspace]
-members = ["deps/pico-args", "bench", "deps/simplelog", "deps/log", "deps/termcolor", "css-parser", "html-parser", "dds", "dds-api", "deps/indextree"]
+members = ["bench", "deps/simplelog", "deps/log", "deps/termcolor", "css-parser", "html-parser", "dds", "dds-api", "deps/indextree"]
 default-members = ["bench", "css-parser", "html-parser", "dds", "dds-api"]
 
 [profile.dev]
 opt-level = 0
+lto = "off"
+incremental = true
+codegen-units = 32
 
 [profile.release]
 opt-level = 3
-lto = "thin"
+lto = "fat"
 codegen-units = 1

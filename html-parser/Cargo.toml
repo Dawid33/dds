@@ -8,6 +8,17 @@ edition = "2021"
 [dependencies]
 indextree = {path = "../deps/indextree" }
 log = { path = "../deps/log" }
-pico-args = { path = "../deps/pico-args" }
 simplelog = { path = "../deps/simplelog" }
-yaml-rust = { path = "../deps/yaml-rust" }
+
+[features]
+default = [
+    # Uncomment these to enable comprehensive debug info.
+    #"tokenizer-log,"
+    #"parser-log",
+    ]
+tokenizer-log = []
+parser-log = []
+
+[[bin]]
+name = "html_testing_bin"
+path = "src/testing_bin/main.rs"

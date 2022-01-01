@@ -11,3 +11,4 @@ dds-api = { path = "../dds-api" }
 indextree = { path = "../deps/indextree" }
 simplelog = { path = "../deps/simplelog"}
 log = { path = "../deps/log"}
+#serde = "1.0.132"

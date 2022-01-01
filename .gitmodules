@@ -13,12 +13,6 @@
 [submodule "deps/indextree"]
 	path = deps/indextree
 	url = ../indextree
-[submodule "deps/pico-args"]
-	path = deps/pico-args
-	url = ../pico-args
-[submodule "deps/yaml-rust"]
-	path = deps/yaml-rust
-	url = ../yaml-rust
-[submodule "deps/linked-hash-map"]
-	path = deps/linked-hash-map
-	url = ../linked-hash-map
+[submodule "deps/serde"]
+	path = deps/serde
+	url = ../serde

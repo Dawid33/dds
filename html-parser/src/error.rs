@@ -1,6 +1,6 @@
 use std::{fmt::Display, error::Error};
 
-use crate::{Tokenizer, Token, states::InsertionMode};
+use crate::{tokenizer::Tokenizer, tokenizer::Token, states::InsertionMode};
 
 #[derive(Debug)]
 pub enum HtmlParseError {

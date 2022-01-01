@@ -1,109 +1,14 @@
 use std::{default, string::ParseError};
 use indextree::Arena;
 use log::*;
-use crate::{Token, states::InsertionMode, error::HtmlParseError, preproccesor::PreProccessor, Tokenizer};
-
-
-pub trait Tree<T> {
-    fn get_node_id(&mut self, node: &T);
-}
-
-#[derive(Debug)]
-pub enum ElementKind {
-    Html,
-    Head,
-    Body,
-    Br,
-}
-
-#[derive(Debug)]
-pub struct Element {
-    kind : ElementKind,
-}
-
-pub struct ParseState {
-    _script_nesting_level: u32,
-    _parser_pause: bool,
-    tree: Arena<Element>,
-    mode: InsertionMode,
-    open_elements: Vec<indextree::NodeId>,
-    reconsume : bool,
-    previous : Option<Token>,
-    head_pointer : Option<indextree::NodeId>,
-}
-
-impl ParseState {
-    pub fn new() -> Self {
-        Self {
-            _script_nesting_level: 0,
-            _parser_pause: false,
-            mode: InsertionMode::Initial,
-            open_elements: Vec::new(),
-            tree : Arena::new(),
-            reconsume : false,
-            previous : None,
-            head_pointer : None,
-        }
-    }
-}
-
-pub struct HtmlParser {}
-
-impl HtmlParser {
-    pub fn new() -> Self {
-        Self {}
-    }
-
-     // Parse a token stream into a DOM Tree.
-    // https://html.spec.whatwg.org/multipage/parsing.html#tree-construction
-    pub fn parse(input: &str, mut state: ParseState) -> Result<Arena<Element>, Box<dyn std::error::Error>>
-    //where T : Tree<Element> + Default
-    {
-        let html = PreProccessor::new(input)?;
-        let mut tokens = Tokenizer::new(html);
-        
-        // Exit the loop after all tokens have been parsed.
-        loop {
-            let current_token = if state.reconsume {
-                if let Some(ref token) = state.previous {
-                    state.reconsume = false;
-                    token.clone()
-                } else {
-                    return Err(Box::new(HtmlParseError::ReconsumeNonExistingToken));
-                }
-            } else if let Some((token, error)) = tokens.next() {
-                if let Some(e) = error {
-                    warn!("{}", e);
-                }
-                info!("Token : {:?}", token);
-                state.previous = Some(token.clone());
-                token
-            } else {
-                // Exit the loop if tokens.next() return None, which means we have read all tokens.
-                break;
-            };
-
-            let result = match state.mode {
-                InsertionMode::Initial => parse_initial(current_token, &mut state),
-                InsertionMode::BeforeHtml => parse_before_html(current_token, &mut state),
-                InsertionMode::BeforeHead => parse_before_head(current_token, &mut state),
-                _ => return Err(Box::new(HtmlParseError::InsertionModeCaseNotHandled(state.mode))),
-            };
-            
-            if let Err(e) = result {
-
-            }
-        }
-        Ok(state.tree)
-    }
-}
+use crate::{ParseState, tokenizer::{Token, TagKind}, states::InsertionMode, error::HtmlParseError, preproccesor::PreProccessor, tokenizer::Tokenizer, Element, ElementKind};
 
 //https://html.spec.whatwg.org/multipage/parsing.html#the-initial-insertion-mode
 pub fn parse_initial(token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
     match &token {
         Token::Character(c) => {
             match c {
-                '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' | '\u{000D}' => {
+                '\t' | '\u{000A}' | '\u{000C}' | ' ' | '\r' => {
                     //Do nothing
                 }, // tab, LF, FF, Space, Carrige Return
                 _ => {
@@ -129,7 +34,7 @@ pub fn parse_before_html(token : Token, state : &mut ParseState) -> Result<(), H
         Token::Comment(comment) => todo!(),
         Token::Character(c) => {
             match c {
-                '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' | '\u{000D}' => {
+                '\t' | '\u{000A}' | '\u{000C}' | ' ' | '\r' => {
                     //Do nothing
                 }, // tab, LF, FF, Space, Carrige Return
                 _ => ()
@@ -142,10 +47,12 @@ pub fn parse_before_html(token : Token, state : &mut ParseState) -> Result<(), H
             state.open_elements.push(state.tree.new_node(new_element));
             state.mode = InsertionMode::BeforeHead;
             if let Token::StartTag(name, _, _) = token {
+                info!("name {:?}", name);
                 if name != "html" {
                     state.reconsume = true;
                 }
             }
+            if cfg!(feature = "parser-log") {trace!("PARSE_BEFORE_HTML {:?}", token);}
         }
     }
     Ok(())
@@ -164,7 +71,7 @@ pub fn parse_before_head (token : Token, state : &mut ParseState) -> Result<(), 
     match &token {
         Token::Character(c) => {
             match c {
-                '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' | '\u{000D}' => {
+                '\t' | '\u{000A}' | '\u{000C}' | ' ' | '\r' => {
                     //Do nothing
                 }, // tab, LF, FF, Space, Carrige Return
                 _ => ()
@@ -174,6 +81,7 @@ pub fn parse_before_head (token : Token, state : &mut ParseState) -> Result<(), 
         Token::DOCTYPE(x,y,z,w) => return Err(HtmlParseError::UnexpectedToken(token)), // Parse error
         Token::StartTag(name, is_self_closing, attributes) => {
             if name == "html" {
+                trace!("Shouldn't happen {:?}", token);
                 return parse_in_body(token, state);
             } else if name == "head" {
                 let new_element = Element{
@@ -183,11 +91,13 @@ pub fn parse_before_head (token : Token, state : &mut ParseState) -> Result<(), 
                 state.head_pointer = Some(node);
                 state.open_elements.push(node);
                 state.mode = InsertionMode::InHead;
+                if cfg!(feature = "parser-log") {trace!("PARSE_BEFORE_HEAD {:?}", token);}
             }
         },
         Token::EndTag(name, is_self_closing, attributes) => {
             match name.as_str() {
                 "head" | "body" | "html" | "br" => {
+                    trace!("PARSE_BEFORE_HTML {:?}", token);
                     return default(token, state);
                 }
                 _ => {
@@ -202,7 +112,151 @@ pub fn parse_before_head (token : Token, state : &mut ParseState) -> Result<(), 
     Ok(())
 }
 
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inhead
+pub fn parse_in_head (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    match &token {
+        Token::EndTag(name,_,_) => {
+            if name == "head" {
+                if let None = state.open_elements.pop() { 
+                    warn!("Tried to pop open_elements stack, but there was nothing to pop.");
+                }
+                state.mode = InsertionMode::AfterHead;
+                if cfg!(feature = "parser-log") {trace!("PARSE_IN_HEAD {:?}", token);}
+            }
+        }
+        _ => {
+
+        }
+    }
+    Ok(())
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inheadnoscript
+pub fn parse_in_head_noscript (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#the-after-head-insertion-mode
+pub fn parse_after_head (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    match &token {
+        Token::StartTag(name,_,_) => {
+            state.open_elements.push(state.tree.new_node(Element { kind: ElementKind::Body }));
+            state.frame_set_ok = false;
+            state.mode = InsertionMode::InBody;
+            if cfg!(feature = "parser-log") {trace!("PARSE_AFTER_HEAD {:?}", token);}
+        }
+        _ => {
+
+        }
+    }
+    Ok(())
+}
+
 // https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inbody
 pub fn parse_in_body (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
-    Ok(())
+    match &token {
+        Token::EndTag(name, _, _) => {
+            if name == "body" {
+                state.mode = InsertionMode::AfterBody;
+                Ok(())
+            } else {
+                todo!();
+            }
+        }
+        _ => {
+            todo!()
+        }
+    }
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-incdata
+pub fn parse_text (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intable
+pub fn parse_in_table (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intabletext
+pub fn parse_in_table_text (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-incaption
+pub fn parse_in_caption (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-incolgroup
+pub fn parse_in_column_group (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intbody
+pub fn parse_in_table_body (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intr
+pub fn parse_in_row (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intd
+pub fn parse_in_cell (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inselect
+pub fn parse_in_select (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inselectintable
+pub fn parse_in_select_table (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-intemplate
+pub fn parse_in_template (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-afterbody
+pub fn parse_after_body (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    match &token {
+        Token::EndTag(name, _, _) => {
+            if name == "html" {
+                state.mode = InsertionMode::AfterAfterBody;
+                Ok(())
+            } else {
+                todo!()
+            }
+        }
+        _ => {
+            todo!()
+        }
+    }
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inframeset
+pub fn parse_in_frameset (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-afterframeset
+pub fn parse_after_frameset (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#the-after-after-body-insertion-mode
+pub fn parse_after_after_body (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
+}
+
+// https://html.spec.whatwg.org/multipage/parsing.html#the-after-after-frameset-insertion-mode
+pub fn parse_after_after_frameset (token : Token, state : &mut ParseState) -> Result<(), HtmlParseError> {
+    todo!()
 }

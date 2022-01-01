@@ -1,7 +1,9 @@
+use log::*;
+
 use crate::error::HtmlTokenizerError;
 use crate::states::*;
 
-use crate::PreProccessor;
+use crate::preproccesor::PreProccessor;
 
 pub struct Tokenizer {
     document: PreProccessor,
@@ -104,71 +106,73 @@ impl Iterator for Tokenizer {
                 return None;
             };
 
+            if cfg!(feature = "tokenizer-log") {debug!("State : {:?}", self.state);}
+            
             match self.state {
                 TokenizationState::Data => {
                     match current {
-                        '\u{0026}' => self.state = TokenizationState::CharacterReferenceInData, // &
-                        '\u{003C}' => self.state = TokenizationState::TagOpen,                  // <
-                        '\u{0000}' => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))), // NULL, Parse error
+                        '&' => self.state = TokenizationState::CharacterReferenceInData, // &
+                        '<' => self.state = TokenizationState::TagOpen,                  // <
+                        '\0' => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))), // NULL, Parse error
                         _ => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))),
                         // TODO : EOF
                     }
                 }
                 TokenizationState::TagOpen => {
                     match current {
-                        '\u{0021}' => self.state = TokenizationState::MarkupDeclarationOpen, // !
-                        '\u{002F}' => {
+                        '!' => self.state = TokenizationState::MarkupDeclarationOpen, // !
+                        '/' => {
                             self.state = TokenizationState::EndTagOpen;
                         } // /
-                        '\u{0041}'..='\u{005A}' => {
+                        'A'..='Z' => {
                             self.state = TokenizationState::TagName;
                             self.tag_name_buf.push(char::to_ascii_lowercase(&current));
                         } // A - Z
-                        '\u{0061}'..='\u{007A}' => {
+                        'a'..='z' => {
                             self.state = TokenizationState::TagName;
                             self.tag_name_buf.push(current);
                         } // a - z
-                        '\u{003F}' => self.state = TokenizationState::BogusComment, // ?, Parse error.
-                        _ => return Some((Token::Character('\u{003C}'), Some(HtmlTokenizerError::Something))), // Parse error. TODO: Doesn't make sense.
+                        '?' => self.state = TokenizationState::BogusComment, // ?, Parse error.
+                        _ => return Some((Token::Character('<'), Some(HtmlTokenizerError::Something))), // Parse error. TODO: Doesn't make sense.
                     }
                 }
                 TokenizationState::EndTagOpen => {
                     self.tag_kind = TagKind::EndTag;
                     match current {
-                        '\u{0041}'..='\u{005A}' => {
+                        'A'..='Z' => {
                             self.state = TokenizationState::TagName;
                             self.tag_name_buf.push(char::to_ascii_lowercase(&current));
                         } // A - Z
-                        '\u{0061}'..='\u{007A}' => {
+                        'a'..='z' => {
                             self.state = TokenizationState::TagName;
                             self.tag_name_buf.push(current);
                         } // a - z
-                        '\u{003E}' => self.state = TokenizationState::Data, // >, Parse error.
+                        '>' => self.state = TokenizationState::Data, // >, Parse error.
                         _ => self.state = TokenizationState::BogusComment,  // Parse error.
                                                                              //TODO: EOF
                     }
                 }
                 TokenizationState::TagName => {
                     match current {
-                        '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' => {
+                        '\t' | '\u{000A}' | '\u{000C}' | ' ' => {
                             self.state = TokenizationState::BeforeAttributeName
                         } // tab, LF, FF, SPACE
-                        '\u{002F}' => self.state = TokenizationState::SelfClosingStartTag, // /
-                        '\u{003E}' => {
+                        '/' => self.state = TokenizationState::SelfClosingStartTag, // /
+                        '>' => {
                             self.state = TokenizationState::Data;
                             break;
                         } // >
-                        '\u{0041}'..='\u{005A}' => {
+                        'A'..='Z' => {
                             self.tag_name_buf.push(char::to_ascii_lowercase(&current))
                         } // A - Z
-                        '\u{0000}' => self.tag_name_buf.push('\u{FFFD}'), // NULL Parse error.
+                        '\0' => self.tag_name_buf.push('\u{FFFD}'), // NULL Parse error.
                         _ => self.tag_name_buf.push(current),
                         // TODO : EOF
                     }
                 }
                 TokenizationState::SelfClosingStartTag => {
                     match current {
-                        '\u{003E}' => {
+                        '>' => {
                             self.state = TokenizationState::Data;
                             self.is_self_closing = true;
                             break;
@@ -181,27 +185,27 @@ impl Iterator for Tokenizer {
                 }
                 TokenizationState::BeforeAttributeName => {
                     match current {
-                        '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' => (), // tab, LF, FF, Space
-                        '\u{002F}' => self.state = TokenizationState::SelfClosingStartTag, // /
-                        '\u{003E}' => {
+                        '\t' | '\u{000A}' | '\u{000C}' | ' ' => (), // tab, LF, FF, Space
+                        '/' => self.state = TokenizationState::SelfClosingStartTag, // /
+                        '>' => {
                             self.state = TokenizationState::Data;
                             break;
                         } // >
-                        '\u{0041}'..='\u{005A}' => {
+                        'A'..='Z' => {
                             self.state = TokenizationState::AttributeName;
                             self.attributes_buf.push(Attribute {
                                 name: String::from(char::to_ascii_lowercase(&current)),
                                 value: String::new(),
                             });
                         } // A - Z
-                        '\u{0000}' => {
+                        '\0' => {
                             self.state = TokenizationState::AttributeName;
                             self.attributes_buf.push(Attribute {
                                 name: String::from('\u{FFFD}'),
                                 value: String::new(),
                             });
                         } // >
-                        '\u{0022}' | '\u{0027}' | '\u{003C}' | '\u{003D}' => {
+                        '\u{0022}' | '\u{0027}' | '<' | '\u{003D}' => {
                             self.state = TokenizationState::AttributeName;
                             self.attributes_buf.push(Attribute {
                                 name: String::from(current),
@@ -219,30 +223,30 @@ impl Iterator for Tokenizer {
                 }
                 TokenizationState::AttributeName => {
                     match current {
-                        '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' => {
+                        '\t' | '\u{000A}' | '\u{000C}' | ' ' => {
                             self.state = TokenizationState::AfterAttributeName
                         } // tab, LF, FF, Space
-                        '\u{002F}' => self.state = TokenizationState::SelfClosingStartTag, // /
+                        '/' => self.state = TokenizationState::SelfClosingStartTag, // /
                         '\u{003D}' => self.state = TokenizationState::BeforeAttributeValue, // =
-                        '\u{003E}' => {
+                        '>' => {
                             self.state = TokenizationState::Data;
                             break;
                         } // >
-                        '\u{0041}'..='\u{005A}' => {
+                        'A'..='Z' => {
                             self.attributes_buf
                                 .last_mut()
                                 .unwrap()
                                 .name
                                 .push(char::to_ascii_lowercase(&current));
                         } // A - Z
-                        '\u{0000}' => {
+                        '\0' => {
                             self.attributes_buf
                                 .last_mut()
                                 .unwrap()
                                 .name
                                 .push('\u{FFFD}');
                         } // NULL, Parse error
-                        '\u{0022}' | '\u{0027}' | '\u{003C}' => {
+                        '\u{0022}' | '\u{0027}' | '<' => {
                             self.attributes_buf.last_mut().unwrap().name.push(current);
                         } // " ' < = Parse error
                         _ => {
@@ -253,14 +257,14 @@ impl Iterator for Tokenizer {
                 }
                 TokenizationState::AfterAttributeName => {
                     match current {
-                        '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' => (), // tab, LF, FF, Space
-                        '\u{002F}' => self.state = TokenizationState::SelfClosingStartTag, // /
+                        '\t' | '\u{000A}' | '\u{000C}' | ' ' => (), // tab, LF, FF, Space
+                        '/' => self.state = TokenizationState::SelfClosingStartTag, // /
                         '\u{003D}' => self.state = TokenizationState::BeforeAttributeValue, // =
-                        '\u{003E}' => {
+                        '>' => {
                             self.state = TokenizationState::Data;
                             break;
                         } // >
-                        '\u{0000}' => {
+                        '\0' => {
                             self.state = TokenizationState::AttributeName;
                             self.attributes_buf.push(Attribute {
                                 name: String::from('\u{FFFD}'),
@@ -278,22 +282,22 @@ impl Iterator for Tokenizer {
                 }
                 TokenizationState::BeforeAttributeValue => {
                     match current {
-                        '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' => (), // tab, LF, FF, Space
+                        '\t' | '\u{000A}' | '\u{000C}' | ' ' => (), // tab, LF, FF, Space
                         '\u{0022}' => self.state = TokenizationState::AttributeValueDoubleQuoted, // "
-                        '\u{0026}' => {
+                        '&' => {
                             self.state = TokenizationState::AttributeValueUnquoted;
                             reconsume = true;
                         } // &
                         '\u{0027}' => self.state = TokenizationState::AttributeValueUnquoted, // '
-                        '\u{0000}' => {
+                        '\0' => {
                             self.state = TokenizationState::AttributeValueUnquoted;
                             self.attributes_buf.last_mut().unwrap().value.push(current);
                         } // NULL, Parse error
-                        '\u{003E}' => {
+                        '>' => {
                             self.state = TokenizationState::Data;
                             break;
                         } // NULL, Parse error
-                        '\u{003C}' | '\u{003D}' | '\u{0060}' => {
+                        '<' | '\u{003D}' | '\u{0060}' => {
                             self.state = TokenizationState::AttributeValueUnquoted;
                             self.attributes_buf.last_mut().unwrap().value.push(current);
                         } // < = `
@@ -305,24 +309,24 @@ impl Iterator for Tokenizer {
                 }
                 TokenizationState::AttributeValueUnquoted => {
                     match current {
-                        '\u{0009}' | '\u{000A}' | '\u{000C}' | '\u{0020}' => {
+                        '\t' | '\u{000A}' | '\u{000C}' | ' ' => {
                             self.state = TokenizationState::BeforeAttributeName
                         } // tab, LF, FF, Space
-                        '\u{0026}' => {
+                        '&' => {
                             self.state = TokenizationState::CharacterrReferenceInAttributeValue
                         } // & TODO :What is an allowed additional character in a character reference?
-                        '\u{003E}' => {
+                        '>' => {
                             self.state = TokenizationState::Data;
                             break;
                         }
-                        '\u{0000}' => {
+                        '\0' => {
                             self.attributes_buf
                                 .last_mut()
                                 .unwrap()
                                 .value
                                 .push('\u{FFFD}');
                         } // NULL, Parse error
-                        '\u{0022}' | '\u{0027}' | '\u{003C}' | '\u{003D}' | '\u{0060}' => {
+                        '\u{0022}' | '\u{0027}' | '<' | '\u{003D}' | '\u{0060}' => {
                             self.state = TokenizationState::BeforeAttributeName
                         } // " ' < = ` Parse error
                         _ => {
@@ -340,7 +344,10 @@ impl Iterator for Tokenizer {
                 self.is_self_closing,
                 Vec::from(&mut self.attributes_buf[..]),
             ), None))
-        } else {
+        } else {            
+            // TODO: Fix this, this is not a good way of doing this.
+            // The tag kind needs to be reset after every end tag.
+            self.tag_kind = TagKind::StartTag;
             Some((Token::EndTag(
                 self.tag_name_buf.clone(),
                 self.is_self_closing,
