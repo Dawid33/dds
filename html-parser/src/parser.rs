@@ -47,7 +47,6 @@ pub fn parse_before_html(token : Token, state : &mut ParseState) -> Result<(), H
             state.open_elements.push(state.tree.new_node(new_element));
             state.mode = InsertionMode::BeforeHead;
             if let Token::StartTag(name, _, _) = token {
-                info!("name {:?}", name);
                 if name != "html" {
                     state.reconsume = true;
                 }

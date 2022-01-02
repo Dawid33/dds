@@ -1,10 +1,32 @@
+//! A basic HTML Parser
+//! 
+//! This parser is made up of two main components, the **tokenizer** and the **tree builder**.
+//! This parser is specially built for the DDS Project, and as such does not support the entirety of
+//! the HTML5 specification. It is however built according to the HTML standard as much as possible.
+//! 
+//! The main difference is the lack of any scripting capabilities. This allows for better / easier 
+//! concurrency as the tree builder will never halt the tokenizer, which allows them to work in parallel.
+//! Since scripting capabilities are not needed for the DDS project, it makes sense to just leave them out and
+//! to instead optimize everything for the parser's intended use case.
+//! 
+//! ## Parsing steps.
+//! 1. Pre-Processor : This takes the raw HTML input and does some basic checks to see whether it can be parsed by the tokenizer.
+//! 2. Tokenizer : Parses the raw data into tokens that are semantically useful.
+//! 3. Tree Builder : Takes a stream of tokens and constructs a DOM Tree out of it.
+//! 
+//! Goals : 
+//! - [ ] Remove all dependencies besides log. This will be achieved once I write a trait abstraction over a Tree structure. That way the parser could construct a HTML DOM using any data structure that implements this trait. This would be useful for having immutable / mutable / concurrent tree implementations without writing parsing code that individually generates these structures.
+//! - [ ] SIMD / GPU Acceleration : I hope this is possible, though I'm not sure. Research [simd_json](https://simdjson.org/) and see how they managed it. Some ideas on how to do this :
+//!     - Copy the entire file into the GPU and concurrently check every byte to see what range of characters it falls into and how it affects the state. This would create an array of bytes equal in size to the original file. This might allow the tokenizer to "predict" what needs to be done next.
+//! - [ ] 
 #![allow(unused)]
 
-mod error;
-mod parser;
-mod preproccesor;
-mod states;
-mod tokenizer;
+pub mod error;
+pub mod parser;
+pub mod preproccesor;
+pub mod states;
+pub mod tokenizer;
+mod tests;
 
 use std::{default, string::ParseError};
 use indextree::Arena;
@@ -65,7 +87,7 @@ impl HtmlParser {
         Self {}
     }
 
-     // Parse a token stream into a DOM Tree.
+    // Parse a token stream into a DOM Tree.
     // https://html.spec.whatwg.org/multipage/parsing.html#tree-construction
     pub fn parse(input: &str, mut state: ParseState) -> Result<Arena<Element>, Box<dyn std::error::Error>>
     //where T : Tree<Element> + Default
@@ -75,26 +97,38 @@ impl HtmlParser {
         
         // Exit the loop after all tokens have been parsed.
         loop {
+            // Here we need to get the next token we need to process.
+            // Check if we need to re-consume a previously processed token.
             let current_token = if state.reconsume {
                 if let Some(ref token) = state.previous {
                     if cfg!(feature = "parser-log") {info!("Reconsumed token {:?}", token);}
                     state.reconsume = false;
                     token.clone()
                 } else {
+                    // Cannot re-consume a previously processed token if no token has been processed.
                     return Err(Box::new(HtmlParseError::ReconsumeNonExistingToken));
                 }
-            } else if let Some((token, error)) = tokens.next() {
-                if let Some(e) = error {
-                    warn!("{}", e);
-                }
+            // Get the next token from the tokenizer.
+            } else if let Some(wrapped_token) = tokens.next() {
+                let token = match wrapped_token {
+                    Ok(token) => token,
+                    Err(e) => {
+                        match e {
+                            error::HtmlTokenizerError::UndefinedError(token) => token,
+                            error::HtmlTokenizerError::UnexpectedNullCharacter => return Err(Box::new(e)),
+                        }
+                    }
+                };
                 if cfg!(feature = "parser-log") {info!("Token : {:?}", token);}
+                // NOTE: Previously handled tokens are only needed when re-consume a previous token. This could be optimised so that the previous token is only set when necessary (aka if the token needs to be re-consumed later on).
                 state.previous = Some(token.clone());
                 token
             } else {
-                // Exit the loop if tokens.next() return None, which means we have read all tokens.
+                // Exit the loop if tokens.next() returns None, which means we have read all tokens. This is the equivalent of hitting EOF.
                 break;
             };
 
+            // These functions should (hopefully) be inlined by the compiler.
             let result = match state.mode {
                 InsertionMode::Initial => parse_initial(current_token, &mut state),
                 InsertionMode::BeforeHtml => parse_before_html(current_token, &mut state),
@@ -121,9 +155,11 @@ impl HtmlParser {
             };
             
             if let Err(e) = result {
-
+                return Err(Box::new(e));
             }
         }
+
+        // Return a fully constructed tree.
         Ok(state.tree)
     }
 }

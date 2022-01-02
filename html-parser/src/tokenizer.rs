@@ -14,6 +14,7 @@ pub struct Tokenizer {
     attributes_buf: Vec<Attribute>,
     is_self_closing: bool,
     tag_kind: TagKind,
+    return_state : Option<TokenizationState>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -24,8 +25,8 @@ pub struct TokenStream {
 impl From<Tokenizer> for TokenStream {
     fn from(input: Tokenizer) -> Self {
         let mut output = Vec::new();
-        for (token, error) in input {
-            output.push(token);
+        for wrapped_token in input {
+            output.push(wrapped_token.unwrap());
         }
         Self { tokens: output }
     }
@@ -72,6 +73,7 @@ impl Tokenizer {
             attributes_buf: Vec::new(),
             is_self_closing: false,
             tag_kind: TagKind::StartTag,
+            return_state : None,
         }
     }
     pub fn reset(&mut self) {
@@ -82,7 +84,7 @@ impl Tokenizer {
 }
 
 impl Iterator for Tokenizer {
-    type Item = (Token, Option<HtmlTokenizerError>);
+    type Item = Result<Token, HtmlTokenizerError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut chars = self.document.raw[self.position..].chars();
@@ -109,12 +111,13 @@ impl Iterator for Tokenizer {
             if cfg!(feature = "tokenizer-log") {debug!("State : {:?}", self.state);}
             
             match self.state {
+                //https://html.spec.whatwg.org/multipage/parsing.html#data-state
                 TokenizationState::Data => {
                     match current {
                         '&' => self.state = TokenizationState::CharacterReferenceInData, // &
                         '<' => self.state = TokenizationState::TagOpen,                  // <
-                        '\0' => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))), // NULL, Parse error
-                        _ => return Some((Token::Character(current), Some(HtmlTokenizerError::Something))),
+                        '\0' => return Some(Err(HtmlTokenizerError::UndefinedError(Token::Character(current)))), // NULL, Parse error
+                        _ => return Some(Ok(Token::Character(current))),
                         // TODO : EOF
                     }
                 }
@@ -133,7 +136,7 @@ impl Iterator for Tokenizer {
                             self.tag_name_buf.push(current);
                         } // a - z
                         '?' => self.state = TokenizationState::BogusComment, // ?, Parse error.
-                        _ => return Some((Token::Character('<'), Some(HtmlTokenizerError::Something))), // Parse error. TODO: Doesn't make sense.
+                        _ => return Some(Err(HtmlTokenizerError::UndefinedError(Token::Character('<')))), // Parse error. TODO: Doesn't make sense.
                     }
                 }
                 TokenizationState::EndTagOpen => {
@@ -307,6 +310,20 @@ impl Iterator for Tokenizer {
                         } // TODO : EOF
                     }
                 }
+                TokenizationState::AttributeValueDoubleQuoted => {
+                    match current {
+                        '\"' => self.state = TokenizationState::AfterAttributeValueQuoted,
+                        '&' => self.return_state = Some(TokenizationState::AttributeValueDoubleQuoted),
+                        '\n' => return Some(Err(HtmlTokenizerError::UnexpectedNullCharacter)),
+                        _ => {
+                            
+                        },
+                        //TODO : EOF
+                    }
+                },
+                TokenizationState::AttributeValueSingleQuoted => {
+
+                },
                 TokenizationState::AttributeValueUnquoted => {
                     match current {
                         '\t' | '\u{000A}' | '\u{000C}' | ' ' => {
@@ -334,25 +351,57 @@ impl Iterator for Tokenizer {
                         } //TODO : EOF
                     }
                 }
-                _ => (),
+                TokenizationState::CharacterReferenceInData => todo!(),
+                TokenizationState::RCDATA => todo!(),
+                TokenizationState::CharacterReferenceInRCDATA => todo!(),
+                TokenizationState::RAWTEXT => todo!(),
+                TokenizationState::ScriptData => todo!(),
+                TokenizationState::PLAINTEXT => todo!(),
+                TokenizationState::RCDATALessThanSign => todo!(),
+                TokenizationState::RCDATAEndTagOpen => todo!(),
+                TokenizationState::RCDATAEndTagName => todo!(),
+                TokenizationState::RAWTEXTLessThanSign => todo!(),
+                TokenizationState::RAWTEXTEndTagOpen => todo!(),
+                TokenizationState::RAWTEXTEndTagName => todo!(),
+                TokenizationState::AttributeValueDoubleQuoted => todo!(),
+                TokenizationState::AttributeValueSingleQuoted => todo!(),
+                TokenizationState::CharacterrReferenceInAttributeValue => todo!(),
+                TokenizationState::AfterAttributeValueQuoted => todo!(),
+                TokenizationState::BogusComment => todo!(),
+                TokenizationState::MarkupDeclarationOpen => todo!(),
+                TokenizationState::CommentStart => todo!(),
+                TokenizationState::CommentStartDash => todo!(),
+                TokenizationState::Comment => todo!(),
+                TokenizationState::CommentEndDash => todo!(),
+                TokenizationState::CommentEnd => todo!(),
+                TokenizationState::CommentEndBang => todo!(),
+                TokenizationState::DOCTYPE => todo!(),
+                TokenizationState::BeforeDOCTYPEName => todo!(),
+                TokenizationState::DOCTYPEName => todo!(),
+                TokenizationState::AfterDOCTYPEName => todo!(),
+                TokenizationState::AfterDOCTYPEPublicKeyword => todo!(),
+                TokenizationState::BeforeDOCTYPEPublicIdentifier => todo!(),
+                TokenizationState::DOCTYPEPublicIdentifierDoubleQuoted => todo!(),
+                TokenizationState::DOCTYPEPublicIdentifierSingleQuoted => todo!(),
+                TokenizationState::AfterDOCTYPEPublicIdentifier => todo!(),
+                TokenizationState::BetweenDOCTYPEPublicAndSystemIdentifiers => todo!(),
+                TokenizationState::AfterDOCTYPESystemKeyword => todo!(),
+                TokenizationState::BeforeDOCTYPESystemIdentifier => todo!(),
+                TokenizationState::DOCTYPESystemIdentifierDoubleQuoted => todo!(),
+                TokenizationState::DOCTYPESystemIdentifierSingleQuoted => todo!(),
+                TokenizationState::AfterDOCTYPESystemIdentifier => todo!(),
+                TokenizationState::BogusDOCTYPE => todo!(),
+                TokenizationState::CDATASection => todo!(),
             }
         }
 
         let output = if let TagKind::StartTag = self.tag_kind {
-            Some((Token::StartTag(
-                self.tag_name_buf.clone(),
-                self.is_self_closing,
-                Vec::from(&mut self.attributes_buf[..]),
-            ), None))
+            Some(Ok(Token::StartTag(self.tag_name_buf.clone(), self.is_self_closing, Vec::from(&mut self.attributes_buf[..]))))
         } else {            
-            // TODO: Fix this, this is not a good way of doing this.
             // The tag kind needs to be reset after every end tag.
+            // TODO: Fix this ^, this is not a good way of doing this.
             self.tag_kind = TagKind::StartTag;
-            Some((Token::EndTag(
-                self.tag_name_buf.clone(),
-                self.is_self_closing,
-                Vec::from(&mut self.attributes_buf[..]),
-            ), None))
+            Some(Ok(Token::EndTag(self.tag_name_buf.clone(), self.is_self_closing, Vec::from(&mut self.attributes_buf[..]))))
         };
         self.reset();
         return output;

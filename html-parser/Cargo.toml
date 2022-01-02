@@ -13,12 +13,12 @@ simplelog = { path = "../deps/simplelog" }
 [features]
 default = [
     # Uncomment these to enable comprehensive debug info.
-    #"tokenizer-log,"
+    #"tokenizer-log",
     #"parser-log",
     ]
 tokenizer-log = []
 parser-log = []
 
-[[bin]]
-name = "html_testing_bin"
-path = "src/testing_bin/main.rs"
+# [[bin]]
+# name = "html_testing_bin"
+# path = "src/testing_bin/main.rs"

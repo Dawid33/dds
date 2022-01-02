@@ -1,6 +1,21 @@
+After cloning, update each of the submodules.
 `git submodule update --init --recursive`
 
-## Plan
-XML/HTML file to describe dom.
-CSS to style dom.
-wasm to manipulate dom and CSS.
+Set your toolchain to nightly :
+rustup override set nightly
+
+To view docs locally in your browser run :
+`cargo doc --open`
+
+## Development Roadmap
+- [ ] Finish the HTML parser so that it can generate a basic dom tree.
+- [ ] Work on both the renderer and the CSS parser in tandem.
+  - [ ] MILESTONE #1 :Render HTML in a window with OpenGL or Vulcan or whatever.
+- [ ] Finish the CSS Parser. 
+  - [ ] CSS Syntax module .
+  - [ ] CSS Object Model module.
+- [ ] MILESTONE #2 : Render HTML with CSS applied to it.
+- [ ] WASM Time :
+  - [ ] Create a WASM sandbox that can execute arbitrary wasm code.
+  - [ ] Create an implementation of the Web assembly system interface whereby users can use the standard library in their apps (WASI).
+- [ ] Refine the HTML parser so that it conforms to HTML5 as much as possible.

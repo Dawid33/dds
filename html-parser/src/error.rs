@@ -35,7 +35,8 @@ impl std::fmt::Display for HtmlParseError {
 
 #[derive(Debug)]
 pub enum HtmlTokenizerError {
-    Something,
+    UndefinedError(Token),
+    UnexpectedNullCharacter,
 }
 
 impl std::error::Error for HtmlTokenizerError {}
@@ -44,7 +45,8 @@ impl std::fmt::Display for HtmlTokenizerError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "HtmlTokenizerError: ");
         match &self {
-            HtmlTokenizerError::Something => write!(f, "Something went wrong."),
+            HtmlTokenizerError::UndefinedError(token) => write!(f, "Encountered an undefined error when tokenizing. Last token = {:?}.", token),
+            HtmlTokenizerError::UnexpectedNullCharacter => write!(f, "Encountered a NULL character when there wasn't supposed to be any."),
         }
     }
 }

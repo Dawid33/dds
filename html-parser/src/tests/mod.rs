@@ -1,2 +1,3 @@
 //https://github.com/web-platform-tests/wpt
-mod tokenizer;
+#[cfg(test)]
+mod tokenizer_general_use_cases;
