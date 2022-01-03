@@ -1,6 +1,20 @@
 [workspace]
-members = ["bench", "deps/simplelog", "deps/log", "deps/termcolor", "css-parser", "html-parser", "dds", "dds-api", "deps/indextree"]
+members = ["bench",
+    "deps/simplelog",
+    "deps/log",
+    "deps/termcolor",
+    "css-parser",
+    "html-parser",
+    "dds",
+    "dds-api",
+    "deps/indextree",
+    "deps/ash/ash",
+    "deps/ash/ash-window",
+    "deps/ash/examples",
+    "deps/ash/generator",
+    ]
 default-members = ["bench", "css-parser", "html-parser", "dds", "dds-api"]
+
 
 [profile.dev]
 opt-level = 0

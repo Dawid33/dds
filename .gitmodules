@@ -16,3 +16,6 @@
 [submodule "deps/serde"]
 	path = deps/serde
 	url = ../serde
+[submodule "deps/ash"]
+	path = deps/ash
+	url = ../ash

@@ -9,6 +9,6 @@ fn main () -> Result<(), Box<dyn std::error::Error>> {
             TermLogger::new(LevelFilter::Trace, Config::default(), TerminalMode::Mixed, ColorChoice::Auto),
         ]
     ).unwrap();
-    
+
     Ok(())
 }
