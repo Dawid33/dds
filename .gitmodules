@@ -19,3 +19,12 @@
 [submodule "deps/ash"]
 	path = deps/ash
 	url = ../ash
+[submodule "deps/x11-rs"]
+	path = deps/x11-rs
+	url = ../x11-rs
+[submodule "deps/libc"]
+	path = deps/libc
+	url = ../libc
+[submodule "deps/pkg-config-rs"]
+	path = deps/pkg-config-rs
+	url = ../pkg-config-rs

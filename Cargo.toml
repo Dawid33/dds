@@ -12,8 +12,10 @@ members = ["bench",
     "deps/ash/ash-window",
     "deps/ash/examples",
     "deps/ash/generator",
+    "render-beast",
+    "deps/x11-rs/x11"
     ]
-default-members = ["bench", "css-parser", "html-parser", "dds", "dds-api"]
+default-members = ["dds"]
 
 
 [profile.dev]

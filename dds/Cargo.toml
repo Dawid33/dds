@@ -13,3 +13,4 @@ simplelog = { path = "../deps/simplelog"}
 log = { path = "../deps/log"}
 html-parser = { path = "../html-parser" }
 ash = { path = "../deps/ash/ash" }
+x11 = { path = "../deps/x11-rs/x11", features = ["xlib"]}

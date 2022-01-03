@@ -53,8 +53,6 @@ pub struct Element {
 }
 
 pub struct ParseState {
-    _script_nesting_level: u32,
-    _parser_pause: bool,
     frame_set_ok : bool,
     reconsume : bool,
     tree: Arena<Element>,
@@ -67,8 +65,6 @@ pub struct ParseState {
 impl ParseState {
     pub fn new() -> Self {
         Self {
-            _script_nesting_level: 0,
-            _parser_pause: false,
             mode: InsertionMode::Initial,
             open_elements: Vec::new(),
             tree : Arena::new(),

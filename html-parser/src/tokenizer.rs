@@ -91,7 +91,7 @@ impl Iterator for Tokenizer {
         let mut reconsume = false;
 
         loop {
-            // If the current character is reconsumed, reset the itertor back one character (which is self.position).
+            // If the current character is re-consumed, reset the iterator back one character (which is self.position).
             if reconsume {
                 chars =
                     self.document.raw[self.position - self.previous.unwrap().len_utf8()..].chars();
@@ -331,7 +331,7 @@ impl Iterator for Tokenizer {
                         } // tab, LF, FF, Space
                         '&' => {
                             self.state = TokenizationState::CharacterrReferenceInAttributeValue
-                        } // & TODO :What is an allowed additional character in a character reference?
+                        } // & TODO : What is an allowed additional character in a character reference?
                         '>' => {
                             self.state = TokenizationState::Data;
                             break;
@@ -399,7 +399,7 @@ impl Iterator for Tokenizer {
             Some(Ok(Token::StartTag(self.tag_name_buf.clone(), self.is_self_closing, Vec::from(&mut self.attributes_buf[..]))))
         } else {            
             // The tag kind needs to be reset after every end tag.
-            // TODO: Fix this ^, this is not a good way of doing this.
+            // FIXME: Fix this ^, this is not a good way of doing this.
             self.tag_kind = TagKind::StartTag;
             Some(Ok(Token::EndTag(self.tag_name_buf.clone(), self.is_self_closing, Vec::from(&mut self.attributes_buf[..]))))
         };
