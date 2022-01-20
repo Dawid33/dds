@@ -1,21 +1,16 @@
 [workspace]
-members = ["bench",
-    "deps/simplelog",
-    "deps/log",
-    "deps/termcolor",
-    "css-parser",
-    "html-parser",
-    "dds",
-    "dds-api",
-    "deps/indextree",
-    "deps/ash/ash",
-    "deps/ash/ash-window",
-    "deps/ash/examples",
-    "deps/ash/generator",
-    "render-beast",
-    "deps/x11-rs/x11"
+members = [
+    # "deps/simplelog",
+    # "deps/log",
+    # "deps/termcolor",
+    # "css-parser",
+    # "html-parser",
+    "dds-core",
+    # "dds-api",
+    # "deps/indextree",
+    # "render-beast",
     ]
-default-members = ["dds"]
+default-members = ["dds-core"]
 
 
 [profile.dev]

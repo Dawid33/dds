@@ -22,4 +22,8 @@ To view docs locally in your browser run :
 - [ ] Refine the HTML parser so that it conforms to HTML5 as much as possible.
 
 ## Dependencies : 
-- ash : Used for interfacing with the Vulcan API.
+- vk-sys : Vulcan bindings
+- GLFW : Window creation
+
+## Benchmarking
+`cargo-criterion` is used for benchmarking. You can install it through cargo with `cargo install cargo-criterion`

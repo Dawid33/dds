@@ -10,6 +10,9 @@ indextree = {path = "../deps/indextree" }
 log = { path = "../deps/log" }
 simplelog = { path = "../deps/simplelog" }
 
+[dev-dependencies]
+criterion = "0.3"
+
 [features]
 default = [
     # Uncomment these to enable comprehensive debug info.
@@ -22,3 +25,7 @@ parser-log = []
 # [[bin]]
 # name = "html_testing_bin"
 # path = "src/testing_bin/main.rs"
+
+[[bench]]
+name = "tree_builder"
+harness = false

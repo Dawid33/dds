@@ -7,10 +7,11 @@ default-run = "dds"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dds-api = { path = "../dds-api" }
-indextree = { path = "../deps/indextree" }
+# dds-api = { path = "../dds-api" }
+# indextree = { path = "../deps/indextree" }
 simplelog = { path = "../deps/simplelog"}
 log = { path = "../deps/log"}
-html-parser = { path = "../html-parser" }
-ash = { path = "../deps/ash/ash" }
-x11 = { path = "../deps/x11-rs/x11", features = ["xlib"]}
+# html-parser = { path = "../html-parser" }
+
+glfw = { version = "0.43.0", default-features = false, features = ["vulkan"]}
+vk-sys = { version = "*" }
