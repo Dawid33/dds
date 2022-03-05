@@ -4,13 +4,13 @@ members = [
     # "deps/log",
     # "deps/termcolor",
     # "css-parser",
-    # "html-parser",
-    "dds-core",
+    "html-parser",
+    # "dds-core",
+    "dds-utils",
     # "dds-api",
-    # "deps/indextree",
     # "render-beast",
     ]
-default-members = ["dds-core"]
+default-members = ["dds-utils", "html-parser"]
 
 
 [profile.dev]

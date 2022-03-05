@@ -9,6 +9,7 @@ edition = "2021"
 indextree = {path = "../deps/indextree" }
 log = { path = "../deps/log" }
 simplelog = { path = "../deps/simplelog" }
+dds-utils = { path = "../dds-utils" }
 
 [dev-dependencies]
 criterion = "0.3"

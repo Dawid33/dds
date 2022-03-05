@@ -28,3 +28,6 @@
 [submodule "deps/pkg-config-rs"]
 	path = deps/pkg-config-rs
 	url = ../pkg-config-rs
+[submodule "deps/miniserde"]
+	path = deps/miniserde
+	url = ../miniserde
